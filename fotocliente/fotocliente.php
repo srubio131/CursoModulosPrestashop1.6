@@ -25,9 +25,9 @@
       $this->bootstrap = true;
 
       // Versiones compatibles donde el módulo funciona
-      $this->ps_versions_compliancy = array("min"=>"1.5.2", "max"=>"1.6.1.18");
+      $this->ps_versions_compliancy = array("min"=>"1.5.2", "max"=>_PS_VERSION_);
       // Dependencias de modulos que se necesitan para que este modulo funcione bien
-      $this->dependencies = array("blockbanner");
+      $this->dependencies = array();
 
       parent::__construct();
       
@@ -57,7 +57,29 @@
       if(!parent::install()) {
         return false;
       }
-      return true;
+
+      // Inicializar configuración del módulo
+      Configuration::updateValue("FOTOCLIENTE_COMMENTS","1");
+      // Registrar el módulo dentro del hook displayProductTabContent
+      $this->registerHook("displayProductTabContent");
+      // Instalar DB
+      $result = $this->installDB();
+
+      return $result;
+    }
+
+    // Método propio para instalar las tablas necesarias por el módulo
+    private function installDB() {
+      // Conectar a la Db y crear tablas
+      return Db::getInstance()->execute(
+        "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."fotocliente_item` (
+          `id_fotocliente_item` int(11) NOT NULL AUTO_INCREMENT,
+          `id_product` int(11) NOT NULL,
+          `foto` VARCHAR(255) NOT NULL,
+          `comment` text NOT NULL,
+          PRIMARY KEY (`id_fotocliente_item`)
+         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;"
+      );
     }
 
     // Método que se ejecuta al desinstalar el módulo
@@ -65,7 +87,24 @@
       if(!parent::uninstall()) {
         return false;
       }
-      return true;
+
+      // Eliminar configuración
+      Configuration::deleteByName("FOTOCLIENTE_COMMENTS");
+      // Eliminar tablas de la Db
+      $result = $this->uninstallDB();
+
+      return $result;
+    }
+
+    // Método para eliminar el rastro de tablas DB creadas por el módulo
+    private function uninstallDB() {
+      return Db::getInstance()->execute("DROP TABLE `"._DB_PREFIX_."fotocliente_item`");
+    }
+
+    // Uso del hook dentro del módulo. Injecta contenido al hook 
+    public function hookDisplayProductTabContent($params) {
+      // Cargar desde el fichero de la plantilla el hook
+      return $this->display(__FILE__,"displayProductTabContent.tpl");
     }
 
   }
