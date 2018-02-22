@@ -1,1 +1,0 @@
-<h1>Esto es una plantilla<h1>
