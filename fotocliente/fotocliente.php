@@ -1,5 +1,7 @@
 <?php 
 
+  include_once 'classes/FotoclienteObj.php';
+
   if (!defined('_PS_VERSION_')) {
     exit;
   }
@@ -103,6 +105,49 @@
 
     // Uso del hook dentro del módulo. Injecta contenido al hook 
     public function hookDisplayProductTabContent($params) {
+
+      if(Tools::isSubmit("fotocliente_submit_foto")) {
+        if(isset($_FILES["foto"])) {
+          $foto = $_FILES["foto"];
+          if($foto['name'] != "") {
+            $allowed = array("image/gif","image/jpeg","image/jpg","image/png","image/ico");
+            if(in_array($foto["type"], $allowed)) {
+              $path = "./upload/";
+              // Modificar el tamaño de la imagen subida
+              list($width, $height) = getimagesize($foto["tmp_name"]);
+              $proporcion = 400/$width;
+              $copy = ImageManager::resize($foto["tmp_name"], $path.$foto["name"], 400, $proporcion*$height, $foto["type"]);
+              if(!$copy) {
+                 $this->context->smarty->assign("errorForm", "Error moviendo la imagen: ".$path.$foto["name"]);
+              } else {
+                // Se ha subido una imagen válida
+                $id_product = Tools::getValue("id_product");
+                $pathfoto = "upload/".$foto["name"];
+                $comentario = Tools::getValue("comentario");
+
+                $fotoObj = new FotoclienteObj();
+                $fotoObj->id_product = (int)$id_product;
+                $fotoObj->foto = $pathfoto;
+                $fotoObj->comment = pSQL($comentario);
+
+                $result = $fotoObj->add();
+                if($result) {
+                  $this->context->smarty->assign("savedForm", "1");
+                } else {
+                  $this->context->smarty->assign("errorForm", "No se ha podido grabar la foto en la BD");
+                }
+              }
+            } else {
+                $this->context->smarty->assign("errorForm", "Formato de imagen no válido");
+            }
+          }
+        }
+      }
+
+      // Enviar a la plantilla de smarty los valores de configuración
+      $enable_comment = Configuration::get("FOTOCLIENTE_COMMENTS");
+      $this->context->smarty->assign("enable_comment", $enable_comment);
+
       // Cargar desde el fichero de la plantilla el hook
       return $this->display(__FILE__,"displayProductTabContent.tpl");
     }
