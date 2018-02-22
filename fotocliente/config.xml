@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>fotocliente</name>
+	<displayName><![CDATA[Fotos de los clientes]]></displayName>
+	<version><![CDATA[0.1]]></version>
+	<description><![CDATA[Permite a los clientes a&ntilde;adir sus propias fotos a los productos]]></description>
+	<author><![CDATA[srubio131]]></author>
+	<tab><![CDATA[front_office_features]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>
