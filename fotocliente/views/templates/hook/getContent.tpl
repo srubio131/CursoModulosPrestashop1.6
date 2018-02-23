@@ -1,15 +1,15 @@
 <fieldset>
-  <h3>Módulo de Fotos de Clientes</h3>
+  <h3>{l s='Módulo de Fotos de Clientes' mod='fotocliente'}</h3>
   <div class="panel">
     <div class="panel-heading">
       <legend>
         <img src="../img/admin/cog.gif" alt="" width="16"/>
-        Configuración
+        {l s='Configuración' mod='fotocliente'}
       </legend>
     </div>
     <form action="" method="post">
       <div class="form-group clearfix">
-        <label class="col-lg-3">Añadir comentario:</label>
+        <label class="col-lg-3">{l s='Añadir comentario' mod='fotocliente'}:</label>
         <div class="col-lg-9">
 
           <img src="../img/admin/enabled.gif" alt="" />
@@ -25,7 +25,7 @@
         </div>
       </div>
       <div class="panel-footer">
-        <input class="btn btn-default pull-right" type="submit" name="fotocliente_form" value="Guardar" />
+        <input class="btn btn-default pull-right" type="submit" name="fotocliente_form" value="{l s='Guardar' mod='fotocliente'}" />
       </div>
     </form>
   </div>

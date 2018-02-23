@@ -1,10 +1,14 @@
 <?php 
 
-  include_once 'classes/FotoclienteObj.php';
-
   if (!defined('_PS_VERSION_')) {
     exit;
   }
+
+  // Incluir clases
+  require_once dirname(__FILE__)."/classes/FotoclienteObj.php";
+
+  // Constantes
+ //define("UPLOAD_FILE", "./upload/fotocliente/");
 
 
   class Fotocliente extends Module {
@@ -14,9 +18,9 @@
       // Nombre interno del módulo
       $this->name = "fotocliente";
       // Nombre que se ve en la info del módulo
-      $this->displayName = "Fotos de los clientes";
+      $this->displayName = $this->l('Fotos de los clientes');
       // Descripción del módulo
-      $this->description = "Permite a los clientes añadir sus propias fotos a los productos";
+      $this->description = $this->l('Permite a los clientes añadir sus propias fotos a los productos');
       // Categoría
       $this->tab = "front_office_features";
       // Autor
@@ -27,7 +31,7 @@
       $this->bootstrap = true;
 
       // Versiones compatibles donde el módulo funciona
-      $this->ps_versions_compliancy = array("min"=>"1.5.2", "max"=>_PS_VERSION_);
+      $this->ps_versions_compliancy = array("min"=>"1.5.2", "max"=>"1.6.1.18");
       // Dependencias de modulos que se necesitan para que este modulo funcione bien
       $this->dependencies = array();
 
@@ -64,6 +68,11 @@
       Configuration::updateValue("FOTOCLIENTE_COMMENTS","1");
       // Registrar el módulo dentro del hook displayProductTabContent
       $this->registerHook("displayProductTabContent");
+      // Crear directorio de subida de fotos
+      /*if (!file_exists('path/to/directory')) {
+        mkdir('path/to/directory', 0777, true);
+      }*/
+
       // Instalar DB
       $result = $this->installDB();
 
@@ -106,6 +115,7 @@
     // Uso del hook dentro del módulo. Injecta contenido al hook 
     public function hookDisplayProductTabContent($params) {
 
+      // Han pulsado el botón añadir, guardamos los datos de la foto en la bd y la imagen en el servidor
       if(Tools::isSubmit("fotocliente_submit_foto")) {
         if(isset($_FILES["foto"])) {
           $foto = $_FILES["foto"];
@@ -113,43 +123,77 @@
             $allowed = array("image/gif","image/jpeg","image/jpg","image/png","image/ico");
             if(in_array($foto["type"], $allowed)) {
               $path = "./upload/";
-              // Modificar el tamaño de la imagen subida
-              list($width, $height) = getimagesize($foto["tmp_name"]);
-              $proporcion = 400/$width;
-              $copy = ImageManager::resize($foto["tmp_name"], $path.$foto["name"], 400, $proporcion*$height, $foto["type"]);
-              if(!$copy) {
-                 $this->context->smarty->assign("errorForm", "Error moviendo la imagen: ".$path.$foto["name"]);
-              } else {
-                // Se ha subido una imagen válida
-                $id_product = Tools::getValue("id_product");
-                $pathfoto = "upload/".$foto["name"];
-                $comentario = Tools::getValue("comentario");
-
-                $fotoObj = new FotoclienteObj();
-                $fotoObj->id_product = (int)$id_product;
-                $fotoObj->foto = $pathfoto;
-                $fotoObj->comment = pSQL($comentario);
-
-                $result = $fotoObj->add();
-                if($result) {
-                  $this->context->smarty->assign("savedForm", "1");
+              $yaExiste = FotoclienteObj::existsFoto(Tools::getValue("id_product"), $path.$foto["name"]);
+              if(!$yaExiste) {
+                // Modificar el tamaño de la imagen subida
+                list($width, $height) = getimagesize($foto["tmp_name"]);
+                $proporcion = 400/$width;
+                $copy = ImageManager::resize($foto["tmp_name"], $path.$foto["name"], 400, $proporcion*$height, $foto["type"]);
+                if(!$copy) {
+                   $this->context->smarty->assign("errorForm", $this->l('Error moviendo la imagen: '.$path.$foto["name"]));
                 } else {
-                  $this->context->smarty->assign("errorForm", "No se ha podido grabar la foto en la BD");
+                  // Se ha subido una imagen válida
+                  $id_product = Tools::getValue("id_product"); // La propia página de ficha de producto la tiene
+                  $pathfoto = $path.$foto["name"];
+                  $comentario = Tools::getValue("comentario");
+
+                  $fotoObj = new FotoclienteObj();
+                  $fotoObj->id_product = (int)$id_product;
+                  $fotoObj->foto = $pathfoto;
+                  $fotoObj->comment = pSQL($comentario);
+
+                  $result = $fotoObj->add();
+                  if($result) {
+                    $this->context->smarty->assign("savedForm", "1");
+                  } else {
+                    $this->context->smarty->assign("errorForm", $this->l('No se ha podido grabar la foto en la BD'));
+                  }
                 }
+              } else {
+                $this->context->smarty->assign("errorForm", $this->l('La imagen ya está incluida'));
               }
             } else {
-                $this->context->smarty->assign("errorForm", "Formato de imagen no válido");
+              $this->context->smarty->assign("errorForm", $this->l('Formato de imagen no válido'));
             }
+          } else {
+            $this->context->smarty->assign("errorForm", $this->l('No se ha indicado ninguna foto'));
           }
+        // Limpiar la foto subida.. para que en futuros refresh no la siga tomando
+        unset($_FILES["foto"]);
         }
       }
+
+      // Mostrar las fotos que ya hayan subidas (si hay)
+      $fotos = FotoclienteObj::getProductFotos(Tools::getValue("id_product"));
+      $this->context->smarty->assign("fotos", $fotos);
 
       // Enviar a la plantilla de smarty los valores de configuración
       $enable_comment = Configuration::get("FOTOCLIENTE_COMMENTS");
       $this->context->smarty->assign("enable_comment", $enable_comment);
 
+      // Añadir código extra
+      $this->context->controller->addCSS($this->_path."views/css/fotocliente.css");
+      $this->context->controller->addJS($this->_path."views/css/fotocliente.js");
+
       // Cargar desde el fichero de la plantilla el hook
-      return $this->display(__FILE__,"displayProductTabContent.tpl");
+      return $this->display(__FILE__, "displayProductTabContent.tpl");
+    }
+
+    // Método para controlar que hacer al reinicialización, deshabilitar, etc
+    // $type: reinicializacion, etc
+    public function onClickOption($type, $href=false) {
+
+      $matchType = array(
+        'reset' => "return confirm('¿Seguro que quieres resetear el módulo?');",
+        'delete' => "return confirm('¿Confirmas que quieres borrar el módulo?');",
+      );
+      if (isset($matchType[$type])) {
+        return $matchType[$type];
+      }
+
+      // Que tome el mensaje por defecto
+      return "";
+
     }
 
   }

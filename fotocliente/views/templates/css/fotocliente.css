@@ -1,0 +1,35 @@
+.fotocliente_bloque{
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
+    clear: both;
+    overflow: auto;
+}
+.fotocliente_img{
+    border: 2px solid #666;
+    padding: 20px;
+}
+
+.fotocliente_comment{
+    background-color: #fbfbfb;
+    padding: 20px 10px;
+}
+
+.fotocliente_bloque textarea{
+    width: 100%;
+}
+
+#fotocliente_popup{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    background-color: rgba(0,0,0,0.5);
+}
+#fotocliente_popup img{
+    position: absolute;
+    top: 0;bottom: 0;left: 0;right: 0;
+    margin: auto;
+}
