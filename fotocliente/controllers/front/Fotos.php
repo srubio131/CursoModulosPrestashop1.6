@@ -10,6 +10,14 @@ class FotoclienteFotosModuleFrontController extends ModuleFrontController {
     parent::init();
   }
 
+  public function setMedia() {
+    parent::setMedia();
+
+    $this->path = __PS_BASE_URI__.'modules/fotocliente/';
+    $this->context->controller->addCSS($this->path.'views/css/fotocliente.css','all');
+    $this->context->controller->addJS($this->path.'views/js/fotocliente.js');
+  }
+
   protected function initListaFotos() {
 
     $fotos = FotoclienteObj::getAll();
@@ -23,7 +31,7 @@ class FotoclienteFotosModuleFrontController extends ModuleFrontController {
   public function initContent() {
     parent::initContent();
 
-    $module_action = Tools::getValue("module_action");
+    $module_action = Tools::getValue("module_action"); // "module_action" porque es el parámetro que estamos pasando
     $actions_list = array("listafotos" => "initListafotos");
     if (isset($actions_list[$module_action])) {
       $funcion = $actions_list[$module_action];

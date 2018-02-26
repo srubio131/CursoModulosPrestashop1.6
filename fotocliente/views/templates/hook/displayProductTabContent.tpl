@@ -13,6 +13,13 @@
     {/if}
   </div>
 {/foreach}
+
+<!-- Genera un link propio de un módulo. (<modulo>,<controlador>,<parámetros>) -->
+{assign var=params value=['module_action'=>'listafotos'] }
+<a href="{$link->getModuleLink('fotocliente','fotos',$params)}">
+  <span>{l s='Ver todas las fotos' mod='fotocliente'}</span>
+</a>
+
 <div class="fotocliente_bloque">
   <form action="" enctype="multipart/form-data" method="post" id="comment-form">
     <div class="form-group col-xs-12 col-md-4">

@@ -171,7 +171,7 @@
       $enable_comment = Configuration::get("FOTOCLIENTE_COMMENTS");
       $this->context->smarty->assign("enable_comment", $enable_comment);
 
-      // Añadir código extra
+      // Añadir media dinámicamente
       $this->context->controller->addCSS($this->_path."views/css/fotocliente.css");
       $this->context->controller->addJS($this->_path."views/css/fotocliente.js");
 
