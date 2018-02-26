@@ -8,8 +8,8 @@
   require_once dirname(__FILE__)."/classes/FotoclienteObj.php";
 
   // Constantes
- //define("UPLOAD_FILE", "./upload/fotocliente/");
-
+  // Directorio fisico de subida
+  define("UPLOAD_DIR", _PS_MODULE_DIR_."../upload/fotocliente/");
 
   class Fotocliente extends Module {
 
@@ -69,9 +69,7 @@
       // Registrar el módulo dentro del hook displayProductTabContent
       $this->registerHook("displayProductTabContent");
       // Crear directorio de subida de fotos
-      /*if (!file_exists('path/to/directory')) {
-        mkdir('path/to/directory', 0777, true);
-      }*/
+      mkdir(UPLOAD_DIR, 0777, false);
 
       // Instalar DB
       $result = $this->installDB();
@@ -101,6 +99,9 @@
 
       // Eliminar configuración
       Configuration::deleteByName("FOTOCLIENTE_COMMENTS");
+      // Eliminar directorio de carga de imagenes
+      rmdir(UPLOAD_DIR);
+      
       // Eliminar tablas de la Db
       $result = $this->uninstallDB();
 
@@ -109,7 +110,7 @@
 
     // Método para eliminar el rastro de tablas DB creadas por el módulo
     private function uninstallDB() {
-      return Db::getInstance()->execute("DROP TABLE `"._DB_PREFIX_."fotocliente_item`");
+      return Db::getInstance()->execute("DROP TABLE IF EXISTS `"._DB_PREFIX_."fotocliente_item`");
     }
 
     // Uso del hook dentro del módulo. Injecta contenido al hook 
@@ -122,19 +123,19 @@
           if($foto['name'] != "") {
             $allowed = array("image/gif","image/jpeg","image/jpg","image/png","image/ico");
             if(in_array($foto["type"], $allowed)) {
-              $path = "./upload/";
-              $yaExiste = FotoclienteObj::existsFoto(Tools::getValue("id_product"), $path.$foto["name"]);
+              // Este path es relativo. No se puede usar el "UPLOAD_DIR"
+              $pathfoto = './upload/fotocliente/'.$foto["name"];
+              $yaExiste = FotoclienteObj::existsFoto(Tools::getValue("id_product"), $pathfoto);
               if(!$yaExiste) {
                 // Modificar el tamaño de la imagen subida
                 list($width, $height) = getimagesize($foto["tmp_name"]);
                 $proporcion = 400/$width;
-                $copy = ImageManager::resize($foto["tmp_name"], $path.$foto["name"], 400, $proporcion*$height, $foto["type"]);
+                $copy = ImageManager::resize($foto["tmp_name"], $pathfoto, 400, $proporcion*$height, $foto["type"]);
                 if(!$copy) {
-                   $this->context->smarty->assign("errorForm", $this->l('Error moviendo la imagen: '.$path.$foto["name"]));
+                   $this->context->smarty->assign("errorForm", $this->l('Error moviendo la imagen: '.$pathfoto));
                 } else {
                   // Se ha subido una imagen válida
                   $id_product = Tools::getValue("id_product"); // La propia página de ficha de producto la tiene
-                  $pathfoto = $path.$foto["name"];
                   $comentario = Tools::getValue("comentario");
 
                   $fotoObj = new FotoclienteObj();
@@ -172,8 +173,8 @@
       $this->context->smarty->assign("enable_comment", $enable_comment);
 
       // Añadir media dinámicamente
-      $this->context->controller->addCSS($this->_path."views/css/fotocliente.css");
-      $this->context->controller->addJS($this->_path."views/css/fotocliente.js");
+      $this->context->controller->addCSS($this->_path."views/templates/css/fotocliente.css");
+      $this->context->controller->addJS($this->_path."views/templates/js/fotocliente.js");
 
       // Cargar desde el fichero de la plantilla el hook
       return $this->display(__FILE__, "displayProductTabContent.tpl");

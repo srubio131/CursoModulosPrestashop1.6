@@ -10,6 +10,7 @@ $_MODULE['<{fotocliente}prestashop>fotocliente_b2e0e153c842cc71735420059a6dbc15'
 $_MODULE['<{fotocliente}prestashop>fotocliente_42202a8b12c2029c9724412da5e8ae88'] = 'No photo indicated';
 $_MODULE['<{fotocliente}prestashop>displayproducttabcontent_5a6bcbe725a8f06ab0d329f4b8c00456'] = 'Customer photos';
 $_MODULE['<{fotocliente}prestashop>displayproducttabcontent_6b61d19c12d0ec78e80547dfb7e8f695'] = 'Image added';
+$_MODULE['<{fotocliente}prestashop>displayproducttabcontent_2ead551dbab3b50bff39aadb7e340375'] = 'View all photos';
 $_MODULE['<{fotocliente}prestashop>displayproducttabcontent_a5163fe21f330316158294f4b906f597'] = 'Photo ';
 $_MODULE['<{fotocliente}prestashop>displayproducttabcontent_a3b8e49703a26e07d26f7659f1b0f8e0'] = 'Comment ';
 $_MODULE['<{fotocliente}prestashop>displayproducttabcontent_30cc00aea30ec70b7c1292b6458181c0'] = 'Send';

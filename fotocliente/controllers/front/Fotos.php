@@ -13,16 +13,16 @@ class FotoclienteFotosModuleFrontController extends ModuleFrontController {
   public function setMedia() {
     parent::setMedia();
 
-    $this->path = __PS_BASE_URI__.'modules/fotocliente/';
-    $this->context->controller->addCSS($this->path.'views/css/fotocliente.css','all');
-    $this->context->controller->addJS($this->path.'views/js/fotocliente.js');
+    $this->path = _PS_MODULE_DIR_.'fotocliente/';
+    $this->context->controller->addCSS($this->path.'views/templates/css/fotocliente.css','all');
+    $this->context->controller->addJS($this->path.'views/templates/js/fotocliente.js');
   }
 
   protected function initListaFotos() {
 
     $fotos = FotoclienteObj::getAll();
     $this->context->smarty->assign("fotos", $fotos);
-    $enable_comment = Configuration::get("FOTOCLI_COMMENTS");
+    $enable_comment = Configuration::get("FOTOCLIENTE_COMMENTS");
     $this->context->smarty->assign("enable_comment", $enable_comment);
 
     $this->setTemplate("listaFotos.tpl");
